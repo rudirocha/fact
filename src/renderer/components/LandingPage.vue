@@ -10,6 +10,9 @@
               <a href="#" @click="openInvoiceForm"><i class="fa fa-plus"></i> Create New</a>
             </li>
           </ul>
+          <pre>
+            {{ sums }}
+          </pre>
         </aside>
       </div>
       <div class="column">
@@ -18,22 +21,35 @@
         <table class="table is-striped">
           <thead>
             <tr>
+              <th title="movementType"> <i class="fa fa-file-o"></i> </th>
               <th>Internal Reference</th>
+              <th>Entity</th>
+              <th>amount</th>
               <th>Issue Date</th>
               <th>Payment Date</th>
-              <th>Entity</th>
-              <th>MovementType</th>
+              <th>Payment Type</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(document, index) in this.documents">
+            <tr v-for="(document, index) in this.documents"
+            :title="document.requireRevision? 'Please review this document' : ''"
+            :class="{'bg-require': document.requireRevision}">
+              <td>
+                <i v-if="document.movementType== 'income'" class='fa fa-sign-in' title="Income"></i>
+                <i v-else-if="document.movementType== 'outcome'" class='fa fa-sign-out' title="outcome"></i>
+                <i v-else class='fa fa-question' title="Unknown Movement Type"></i>
+              </td>
               <td>{{ document.internalReference }} </td>
+              <td>{{ document.entity }} </td>
+              <td>{{ document.amount }} €</td>
               <td>{{ document.issueDate }} </td>
               <td>{{ document.paymentDate }} </td>
-              <td>{{ document.entity }} </td>
-              <td>{{ document.movementType }} </td>
+              <td>{{ document.paymentType }} </td>
               <td>
+                <button class="button is-warning is-small" @click="editDocument(document)">
+                  <i class="fa fa-pencil"></i>
+                </button>
                 <button class="button is-danger is-small" @click="documents.splice(index,1)">
                   <i class="fa fa-times"></i>
                 </button>
@@ -43,10 +59,10 @@
         </table>
       </div>
     </div>
-    <invoice-form v-if="isCreatingInvoice"
-    @closeInvoiceForm="isCreatingInvoice = false"
+    <invoice-form v-if="showModal"
+    @closeInvoiceForm="hideModal"
     @create:invoice="createInvoice"
-    :entityTemplate="Object.assign({}, getInvoiceTemplate())">
+    :entityTemplate="editedDocument">
     </invoice-form>
   </div>
 </template>
@@ -59,57 +75,101 @@
     name: 'landing-page',
     data () {
       return {
-        isCreatingInvoice: false,
+        isCreatingDocument: false,
+        isEditDocument: false,
+        editedDocument: {},
         documents: [
           {
             internalReference: 'FACT1_2017',
             issueDate: '02-01-2017',
             paymentDate: '06-12/2018',
             entity: 'Uptec',
-            movementType: 'Cash',
-            description: 'Just a small description'
+            paymentType: 'Cash',
+            movementType: 'income',
+            description: 'Just a small description',
+            requireRevision: true
           },
           {
             internalReference: 'FACT2_2017',
             issueDate: '02-01-2017',
             paymentDate: '06-12/2018',
             entity: 'IPO',
-            movementType: 'Bank Transfer',
-            description: 'Just a small description'
+            paymentType: 'Bank Transfer',
+            description: 'Just a small description',
+            requireRevision: true
           },
           {
             internalReference: 'FACT2_2017',
             issueDate: '02-01-2017',
             paymentDate: '06-12/2018',
             entity: 'IPO',
-            movementType: 'Bank Transfer',
+            movementType: 'outcome',
+            paymentType: 'Bank Transfer',
             description: 'Just a small description'
           }
         ]
       }
     },
     components: { SystemInformation, InvoiceForm },
+    computed: {
+      showModal () {
+        return this.isCreatingDocument === true || this.isEditDocument === true
+      },
+      sums () {
+        let sums = {
+          total: 0,
+          income: 0,
+          outcome: 0
+        }
+        this.documents.forEach(document => {
+          if (document.movementType === 'income') {
+            sums.income += parseFloat(document.amount)
+          }
+          if (document.movementType === 'outcome') {
+            sums.outcome += parseFloat(document.amount)
+          }
+        })
+        sums.total = sums.income - sums.outcome
+        return sums
+      }
+    },
     methods: {
       open (link) {
         this.$electron.shell.openExternal(link)
       },
       openInvoiceForm () {
-        this.isCreatingInvoice = true
+        this.isCreatingDocument = true
+        this.editedDocument = this.getInvoiceTemplate()
       },
       createInvoice (document) {
         this.documents.push(document)
       },
+      editDocument (document) {
+        this.editedDocument = document
+        this.isEditDocument = true
+      },
       getInvoiceTemplate () {
-        return {
-          internalReference: null,
-          entity: null,
-          issueDate: null,
-          paymentDate: null,
-          description: null,
-          paymentType: null,
-          movementType: null,
-          notes: null
-        }
+        return Object.assign(
+          {},
+          {
+            id: null,
+            internalReference: null,
+            entity: null,
+            issueDate: null,
+            paymentDate: null,
+            description: null,
+            paymentType: null,
+            movementType: null,
+            amount: 0,
+            owner: null,
+            notes: null,
+            requireRevision: false
+          }
+        )
+      },
+      hideModal () {
+        this.isCreatingDocument = false
+        this.isEditDocument = false
       }
     }
   }
@@ -117,4 +177,7 @@
 
 <style>
   @import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro');
+  .bg-require {
+    background-color: #FFDD57 !important;
+  }
 </style>
