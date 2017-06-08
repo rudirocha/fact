@@ -106,7 +106,9 @@
           issueDate: null,
           paymentDate: null,
           description: null,
-          movementType: null
+          paymentType: null,
+          movementType: null,
+          notes: null
         }
       }
     }

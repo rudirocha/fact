@@ -46,12 +46,12 @@
             </div>
             <div class="column is-half">
               <div class="field">
-                <label class="label">Movement type</label>
+                <label class="label">Payment type</label>
                 <p class="control">
                   <span class="select">
-                    <select v-model="entity.movementType">
+                    <select v-model="entity.paymentType">
                       <option disabled value="">Select one</option>
-                      <option v-for="option in movementTypes" v-bind:value="option.value">
+                      <option v-for="option in paymentTypes" v-bind:value="option.value">
                         {{ option.text }}
                       </option>
                     </select>
@@ -59,6 +59,23 @@
                 </p>
               </div>
             </div>
+        </div>
+        <div class="columns">
+          <div class="column is-half">
+            <div class="field">
+              <label class="label">Movement type</label>
+              <p class="control">
+                <span class="select">
+                  <select v-model="entity.movementType">
+                    <option disabled value="">Select one</option>
+                    <option v-for="option in movementTypes" v-bind:value="option.value">
+                      {{ option.text }}
+                    </option>
+                  </select>
+                </span>
+              </p>
+            </div>
+          </div>
         </div>
         <div class="columns">
           <div class="column">
@@ -82,11 +99,15 @@
     components: { Modal },
     data () {
       return {
-        movementTypes: [
+        paymentTypes: [
           {text: 'Bank Transfer', value: 'bt'},
           {text: 'Card', value: 'card'},
           {text: 'Cash', value: 'cash'},
           {text: 'Not paid', value: 'unpaid'}
+        ],
+        movementTypes: [
+          {text: 'Income', value: 'in'},
+          {text: 'Outcome', value: 'out'}
         ],
         entity: {}
       }
