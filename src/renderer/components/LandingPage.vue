@@ -3,21 +3,30 @@
     <div class="columns">
       <div class="column is-2">
         <aside class="menu">
-          <p class="label">Fact menu</p>
+          <p class="label has-text-centered">Menu</p>
           <ul class="menu-list">
             <li>
-              <a href="#General"> <i class="fa fa-hand-spock-o"></i> Main</a>
               <a href="#" @click="openInvoiceForm"><i class="fa fa-plus"></i> Create New</a>
             </li>
           </ul>
-          <pre>
-            {{ sums }}
-          </pre>
+
+          <p class="label has-text-centered"><i class="fa "></i></p>
+          <div class="content is-small has-text-centered">
+            Income Percentage
+          </div>
+          <vue-easy-pie-chart line-cap="butt" :percent="parseFloat(incomePercentage)" :bar-color="incomePercentage > 0 ? '#00ff00' : '#ff0000'">
+            <div class="content is-small">
+              {{ incomePercentage }}%
+            </div>
+          </vue-easy-pie-chart>
+          <div class="content has-text-centered">
+          <span class="tag is-medium is-success" title="income">In: € {{ sums.income || 0 }}</span>
+          <span class="tag is-medium is-danger">Out: € {{ sums.outcome || 0 }}</span>
+          <span class="tag is-medium is-warning">Total: € {{ sums.total || 0  }}</span>
+          </div>
         </aside>
       </div>
       <div class="column">
-        <h1 class="title">Fact Cenas</h1>
-        <p>All cenas de facts</p>
         <table class="table is-striped">
           <thead>
             <tr>
@@ -70,6 +79,8 @@
 <script>
   import SystemInformation from './LandingPage/SystemInformation'
   import InvoiceForm from './Fact/InvoiceForm'
+  import VueEasyPieChart from 'vue-easy-pie-chart'
+  import 'vue-easy-pie-chart/dist/vue-easy-pie-chart.css'
 
   export default {
     name: 'landing-page',
@@ -110,8 +121,11 @@
         ]
       }
     },
-    components: { SystemInformation, InvoiceForm },
+    components: { SystemInformation, InvoiceForm, VueEasyPieChart },
     computed: {
+      incomePercentage () {
+        return ((this.sums.total / this.sums.income) * 100 || 0).toFixed(2)
+      },
       showModal () {
         return this.isCreatingDocument === true || this.isEditDocument === true
       },
