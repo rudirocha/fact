@@ -93,6 +93,7 @@
 
   import VueEasyPieChart from 'vue-easy-pie-chart'
   import InvoiceForm from './Fact/InvoiceForm'
+  import { Field, ListField, OptionValue } from '../lib/CustomFields'
   import 'vue-easy-pie-chart/dist/vue-easy-pie-chart.css'
 
   export default {
@@ -102,32 +103,51 @@
         isCreatingDocument: false,
         isEditDocument: false,
         editedDocument: {},
-        documents: []
+        documents: [],
+        invoiceFormFields: [],
+        invoiceEntity: {}
       }
     },
     mounted () {
-      //  Prepare some data for documents
+      let paymentTypes = [
+        new OptionValue('Bank Transfer', 'bt'),
+        new OptionValue('Credit Card', 'cc'),
+        new OptionValue('Cash', 'cash')
+      ]
+      let movementTypes = [
+        new OptionValue('Income', 'income'),
+        new OptionValue('Outcome', 'outcome')
+      ]
+      this.invoiceEntity = {
+        'id': new Field('id', null, 'ID'),
+        'internalReference': new Field('internalReference', null, 'Internal Reference'),
+        'entity': new Field('entity', null, 'Target Entity'),
+        'issueDate': new Field('issueDate', null, 'Issue Date'),
+        'paymentDate': new Field('paymentDate', null, 'Payment Date'),
+        'description': new Field('description', null, 'Description'),
+        'paymentType': new ListField('paymentType', null, 'PaymentType', paymentTypes),
+        'movementType': new ListField('movementType', null, 'Movement Type', movementTypes)
+      }
+
       for (let i = 0; i < 80; i++) {
         let movTypes = ['income', 'outcome']
         let movType = movTypes[Math.floor(Math.random() * movTypes.length)]
-        this.documents.push(
-          {
-            'id': movType + '_' + i,
-            'internalReference': movType + '_' + i,
-            'entity': 'Entidade ' + i,
-            'issueDate': '01/07/2017',
-            'paymentDate': '01/08/2017',
-            'description': 'Description for ' + i,
-            'paymentType': 'bt',
-            'movementType': movType,
-            'amount': Math.floor(Math.random() * (10000 - 1 + 1)) + 1,
-            'owner': 'XPTOZ',
-            'notes': null,
-            'requireRevision': false
-          }
-        )
+        this.documents.push({
+          'id': movType + '_' + i,
+          'internalReference': movType + '_' + i,
+          'entity': 'Entidade ' + i,
+          'issueDate': '01/07/2017',
+          'paymentDate': '01/08/2017',
+          'description': 'Description for ' + i,
+          'paymentType': 'bt',
+          'movementType': movType,
+          'amount': Math.floor(Math.random() * (10000 - 1 + 1)) + 1,
+          'owner': 'XPTOZ',
+          'notes': null,
+          'requireRevision': false
+        })
       }
-      //  end prepare sample data
+    //  end prepare sample data
     },
     components: { InvoiceForm, VueEasyPieChart },
     computed: {
@@ -143,7 +163,7 @@
             return [...acc, item]
           }
           return [...acc]
-        })
+        }, [])
       },
       sums () {
         let sums = {
